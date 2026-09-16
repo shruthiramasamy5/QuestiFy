@@ -1,0 +1,60 @@
+spring:
+  application:
+    name: institution-service
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:institution_service}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:Shruthika@Y150}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: false
+    show-sql: false
+
+  jackson:
+    default-property-inclusion: non_null
+
+server:
+  port: ${SERVER_PORT:8082}
+  error:
+    include-message: always
+
+questify:
+  jwt:
+    # MUST be the same secret auth-service signs tokens with. Supply it through the
+    # environment (or config server) - never commit a real secret.
+    secret: ${QUESTIFY_JWT_SECRET:${JWT_SECRET:questify-dev-secret-key-change-me-before-deploying-anywhere-real}}
+    issuer: ${QUESTIFY_JWT_ISSUER:questify-auth-service}
+    roles-claim: ${QUESTIFY_JWT_ROLES_CLAIM:roles}
+    institution-claim: ${QUESTIFY_JWT_INSTITUTION_CLAIM:institutionId}
+    email-claim: ${QUESTIFY_JWT_EMAIL_CLAIM:email}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:${EUREKA_URL:${EUREKA_URI:http://localhost:8761/eureka/}}}
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.uuid}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    com.questify.institution: ${LOG_LEVEL:INFO}

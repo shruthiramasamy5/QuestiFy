@@ -1,0 +1,16 @@
+# Add these routes to api-gateway/src/main/resources/application.yml
+# under spring.cloud.gateway.routes (keep the existing auth-service route).
+#
+# spring:
+#   cloud:
+#     gateway:
+#       routes:
+- id: institution-service
+  uri: lb://institution-service
+  predicates:
+    - Path=/api/institutions/**,/api/departments/**,/api/templates/**,/api/plan-usage/**
+  filters:
+    - name: CircuitBreaker
+      args:
+        name: institutionServiceCircuitBreaker
+        fallbackUri: forward:/fallback/institution

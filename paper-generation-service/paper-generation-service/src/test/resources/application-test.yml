@@ -1,0 +1,3 @@
+questify:
+  jwt:
+    secret: test-secret-key-for-unit-tests-please-change-32

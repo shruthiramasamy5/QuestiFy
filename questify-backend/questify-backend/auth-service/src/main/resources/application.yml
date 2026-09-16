@@ -1,0 +1,40 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: AUTH-SERVICE
+  profiles:
+    active: dev
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/questify_auth?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:Shruthika@Y150}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+# NOTE: eureka.instance.instance-id includes a random value so multiple local
+# instances of this service don't collide in the registry during dev.
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:${EUREKA_URL:${EUREKA_URI:http://localhost:8761/eureka/}}}
+  instance:
+    prefer-ip-address: true
+
+questify:
+  jwt:
+    # Dev-only default — override with an env var / secret manager value in
+    # any real deployment. Must be at least 256 bits for HS256.
+    secret: ${QUESTIFY_JWT_SECRET:${JWT_SECRET:questify-dev-secret-key-change-me-before-deploying-anywhere-real}}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:480}
+
+logging:
+  level:
+    com.questify: DEBUG
+

@@ -1,0 +1,42 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: AI-SERVICE
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:${EUREKA_URL:${EUREKA_URI:http://localhost:8761/eureka/}}}
+    register-with-eureka: true
+    fetch-registry: true
+
+  instance:
+    prefer-ip-address: true
+
+questify:
+  jwt:
+    secret: ${QUESTIFY_JWT_SECRET:${JWT_SECRET:questify-dev-secret-key-change-me-before-deploying-anywhere-real}}
+    roles-claim: roles
+
+  ai:
+    gemini:
+      api-key: ${GEMINI_API_KEY:}
+      model: ${GEMINI_MODEL:gemini-3.6-flash}
+      base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com}
+      timeout-seconds: ${GEMINI_TIMEOUT_SECONDS:30}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    com.questify.ai: INFO

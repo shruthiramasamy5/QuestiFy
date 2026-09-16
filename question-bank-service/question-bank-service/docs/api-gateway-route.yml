@@ -1,0 +1,10 @@
+# Add this route to the QuestiFy API Gateway (api-gateway/src/main/resources/application.yml)
+# under spring.cloud.gateway.routes, alongside the auth-service route.
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: question-bank-service
+          uri: lb://question-bank-service
+          predicates:
+            - Path=/api/questions/**,/api/co-mapping/**

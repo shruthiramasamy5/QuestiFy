@@ -1,0 +1,415 @@
+services:
+  # ============================================================================
+  # 1. Infrastructure: MySQL 8.0
+  # ============================================================================
+  mysql:
+    image: mysql:8.0
+    container_name: questify-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-Shruthika@Y150}
+    ports:
+      - "${MYSQL_HOST_PORT:-3307}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - questify-network
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ============================================================================
+  # 2. Infrastructure: MongoDB 7.0
+  # ============================================================================
+  mongodb:
+    image: mongo:7.0
+    container_name: questify-mongodb
+    restart: unless-stopped
+    ports:
+      - "${MONGO_HOST_PORT:-27018}:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - questify-network
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --eval 'db.adminCommand(\"ping\")' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  # ============================================================================
+  # 3. Service Discovery: Eureka Server (:8761)
+  # ============================================================================
+  eureka-server:
+    build:
+      context: ./questify-backend/questify-backend/eureka-server
+      dockerfile: Dockerfile
+    container_name: questify-eureka-server
+    restart: unless-stopped
+    ports:
+      - "${EUREKA_PORT:-8761}:8761"
+    environment:
+      EUREKA_INSTANCE_HOSTNAME: eureka-server
+      SERVER_PORT: 8761
+    networks:
+      - questify-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8761/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 25s
+
+  # ============================================================================
+  # 4. Auth Service (:8081)
+  # ============================================================================
+  auth-service:
+    build:
+      context: ./questify-backend/questify-backend/auth-service
+      dockerfile: Dockerfile
+    container_name: questify-auth-service
+    restart: unless-stopped
+    ports:
+      - "${AUTH_SERVICE_PORT:-8081}:8081"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-Shruthika@Y150}
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/questify_auth?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
+      QUESTIFY_JWT_SECRET: ${QUESTIFY_JWT_SECRET:-questify-dev-secret-key-change-me-before-deploying-anywhere-real}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - questify-network
+
+  # ============================================================================
+  # 5. Institution Service (:8082)
+  # ============================================================================
+  institution-service:
+    build:
+      context: ./institution-service/institution-service
+      dockerfile: Dockerfile
+    container_name: questify-institution-service
+    restart: unless-stopped
+    ports:
+      - "${INSTITUTION_SERVICE_PORT:-8082}:8082"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: institution_service
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-Shruthika@Y150}
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/institution_service?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
+      QUESTIFY_JWT_SECRET: ${QUESTIFY_JWT_SECRET:-questify-dev-secret-key-change-me-before-deploying-anywhere-real}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - questify-network
+
+  # ============================================================================
+  # 6. Question Bank Service (:8083)
+  # ============================================================================
+  question-bank-service:
+    build:
+      context: ./question-bank-service/question-bank-service
+      dockerfile: Dockerfile
+    container_name: questify-question-bank-service
+    restart: unless-stopped
+    ports:
+      - "${QUESTION_BANK_SERVICE_PORT:-8083}:8083"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-Shruthika@Y150}
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/question_bank_service?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
+      QUESTIFY_JWT_SECRET: ${QUESTIFY_JWT_SECRET:-questify-dev-secret-key-change-me-before-deploying-anywhere-real}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - questify-network
+
+  # ============================================================================
+  # 7. AI Service (:8084)
+  # ============================================================================
+  ai-service:
+    build:
+      context: ./ai-service/ai-service
+      dockerfile: Dockerfile
+    container_name: questify-ai-service
+    restart: unless-stopped
+    ports:
+      - "${AI_SERVICE_PORT:-8084}:8084"
+    environment:
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-1.5-flash}
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
+      QUESTIFY_JWT_SECRET: ${QUESTIFY_JWT_SECRET:-questify-dev-secret-key-change-me-before-deploying-anywhere-real}
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - questify-network
+
+  # ============================================================================
+  # 8. Paper Generation Service (:8085)
+  # ============================================================================
+  paper-generation-service:
+    build:
+      context: ./paper-generation-service/paper-generation-service
+      dockerfile: Dockerfile
+    container_name: questify-paper-generation-service
+    restart: unless-stopped
+    ports:
+      - "${PAPER_GENERATION_SERVICE_PORT:-8085}:8085"
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017/paper_generation_service
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
+      QUESTIFY_JWT_SECRET: ${QUESTIFY_JWT_SECRET:-questify-dev-secret-key-change-me-before-deploying-anywhere-real}
+      AI_SELECTION_ENABLED: "true"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - questify-network
+
+  # ============================================================================
+  # 9. Papers Service (:8086)
+  # ============================================================================
+  papers-service:
+    build:
+      context: ./papers-service/papers-service
+      dockerfile: Dockerfile
+    container_name: questify-papers-service
+    restart: unless-stopped
+    ports:
+      - "${PAPERS_SERVICE_PORT:-8086}:8086"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: ${DB_USERNAME:-root}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-Shruthika@Y150}
+      MYSQL_URL: jdbc:mysql://mysql:3306/papers_service?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/papers_service?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
+      QUESTIFY_JWT_SECRET: ${QUESTIFY_JWT_SECRET:-questify-dev-secret-key-change-me-before-deploying-anywhere-real}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - questify-network
+
+  # ============================================================================
+  # 10. Approval Service (:8087)
+  # ============================================================================
+  approval-service:
+    build:
+      context: ./approval-service/approval-service
+      dockerfile: Dockerfile
+    container_name: questify-approval-service
+    restart: unless-stopped
+    ports:
+      - "${APPROVAL_SERVICE_PORT:-8087}:8087"
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: ${DB_USERNAME:-root}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-Shruthika@Y150}
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/approval_service?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
+      QUESTIFY_JWT_SECRET: ${QUESTIFY_JWT_SECRET:-questify-dev-secret-key-change-me-before-deploying-anywhere-real}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - questify-network
+
+  # ============================================================================
+  # 11. Analytics Service (:8088)
+  # ============================================================================
+  analytics-service:
+    build:
+      context: ./analytics-service/analytics-service
+      dockerfile: Dockerfile
+    container_name: questify-analytics-service
+    restart: unless-stopped
+    ports:
+      - "${ANALYTICS_SERVICE_PORT:-8088}:8088"
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: ${DB_USERNAME:-root}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-Shruthika@Y150}
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/analytics_service?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
+      QUESTIFY_JWT_SECRET: ${QUESTIFY_JWT_SECRET:-questify-dev-secret-key-change-me-before-deploying-anywhere-real}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - questify-network
+
+  # ============================================================================
+  # 12. Backup Service (:8089)
+  # ============================================================================
+  backup-service:
+    build:
+      context: ./backup-service/backup-service
+      dockerfile: Dockerfile
+    container_name: questify-backup-service
+    restart: unless-stopped
+    ports:
+      - "${BACKUP_SERVICE_PORT:-8089}:8089"
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: ${DB_USERNAME:-root}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-Shruthika@Y150}
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/backup_service?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
+      QUESTIFY_JWT_SECRET: ${QUESTIFY_JWT_SECRET:-questify-dev-secret-key-change-me-before-deploying-anywhere-real}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - questify-network
+
+  # ============================================================================
+  # 13. Audit Log Service (:8090)
+  # ============================================================================
+  audit-log-service:
+    build:
+      context: ./audit-log-service/audit-log-service
+      dockerfile: Dockerfile
+    container_name: questify-audit-log-service
+    restart: unless-stopped
+    ports:
+      - "${AUDIT_LOG_SERVICE_PORT:-8090}:8090"
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017/audit_log_service
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
+      QUESTIFY_JWT_SECRET: ${QUESTIFY_JWT_SECRET:-questify-dev-secret-key-change-me-before-deploying-anywhere-real}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - questify-network
+
+  # ============================================================================
+  # 14. ML Health Service (:8091)
+  # ============================================================================
+  ml-health-service:
+    build:
+      context: ./ml-health-service/ml-health-service
+      dockerfile: Dockerfile
+    container_name: questify-ml-health-service
+    restart: unless-stopped
+    ports:
+      - "${ML_HEALTH_SERVICE_PORT:-8091}:8091"
+    environment:
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
+      QUESTIFY_JWT_SECRET: ${QUESTIFY_JWT_SECRET:-questify-dev-secret-key-change-me-before-deploying-anywhere-real}
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - questify-network
+
+  # ============================================================================
+  # 15. API Gateway (:8000)
+  # ============================================================================
+  api-gateway:
+    build:
+      context: ./questify-backend/questify-backend/api-gateway
+      dockerfile: Dockerfile
+    container_name: questify-api-gateway
+    restart: unless-stopped
+    ports:
+      - "${GATEWAY_PORT:-8000}:8000"
+    environment:
+      SERVER_PORT: 8000
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
+      AUTH_SERVICE_URL: http://auth-service:8081
+      INSTITUTION_SERVICE_URL: http://institution-service:8082
+      QUESTION_BANK_SERVICE_URL: http://question-bank-service:8083
+      AI_SERVICE_URL: http://ai-service:8084
+      PAPER_GENERATION_SERVICE_URL: http://paper-generation-service:8085
+      PAPERS_SERVICE_URL: http://papers-service:8086
+      APPROVAL_SERVICE_URL: http://approval-service:8087
+      ANALYTICS_SERVICE_URL: http://analytics-service:8088
+      BACKUP_SERVICE_URL: http://backup-service:8089
+      AUDIT_LOG_SERVICE_URL: http://audit-log-service:8090
+      ML_HEALTH_SERVICE_URL: http://ml-health-service:8091
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+    networks:
+      - questify-network
+
+  # ============================================================================
+  # 16. React + Vite Frontend (Nginx :80 -> Host :5173)
+  # ============================================================================
+  questify-frontend:
+    build:
+      context: ./questify-frontend-fixed/questify-frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:8000
+    container_name: questify-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - questify-network
+
+# ==============================================================================
+# Persistent Named Volumes
+# ==============================================================================
+volumes:
+  mysql_data:
+    driver: local
+  mongodb_data:
+    driver: local
+
+# ==============================================================================
+# Isolated Bridge Network
+# ==============================================================================
+networks:
+  questify-network:
+    driver: bridge

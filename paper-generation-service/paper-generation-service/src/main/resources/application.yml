@@ -1,0 +1,41 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: paper-generation-service
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/paper_generation_service}
+      auto-index-creation: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:${EUREKA_URL:${EUREKA_URI:http://localhost:8761/eureka/}}}
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+
+questify:
+  jwt:
+    secret: ${QUESTIFY_JWT_SECRET:${JWT_SECRET:questify-dev-secret-key-change-me-before-deploying-anywhere-real}}
+    roles-claim: roles
+  ai:
+    # Feature flag: attempt AI-assisted selection via ai-service before
+    # falling back to rule-based selection. ai-service itself decides real
+    # availability (Anthropic API key configured or not) at call time -
+    # this flag just lets AI selection be turned off here without touching
+    # ai-service's own config.
+    enabled: ${AI_SELECTION_ENABLED:true}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    com.questify.papergen: INFO

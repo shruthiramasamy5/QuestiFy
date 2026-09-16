@@ -1,0 +1,14 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+*.class
+*.jar
+*.log
+.idea/
+*.iml
+*.iws
+.vscode/
+.settings/
+.classpath
+.project
+.DS_Store
+node_modules/
