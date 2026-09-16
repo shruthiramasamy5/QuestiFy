@@ -1,0 +1,77 @@
+.auth-screen{ display:grid; grid-template-columns:40% 60%; min-height:100vh; }
+@media (max-width:560px){ .auth-screen{ grid-template-columns:1fr; } }
+
+.brand-panel{
+  background:var(--coral); color:var(--tint); position:relative; overflow:hidden;
+  display:flex; flex-direction:column; justify-content:center; padding:56px;
+}
+@media (max-width:560px){ .brand-panel{ display:none; } }
+.brand-panel::before{ content:""; position:absolute; top:-120px; right:-120px; width:420px; height:420px; border-radius:50%; border:1px solid rgba(245,228,220,.14); }
+.brand-panel::after{ content:""; position:absolute; bottom:-160px; left:-100px; width:320px; height:320px; border-radius:50%; border:1px solid rgba(245,228,220,.10); }
+.brand-panel-inner{ position:relative; z-index:1; max-width:380px; }
+.brand-lockup{ display:flex; align-items:center; gap:12px; margin-bottom:64px; }
+.auth-logo-mark{
+  width:38px; height:38px; border-radius:10px; background:rgba(245,228,220,.14);
+  border:1px solid rgba(245,228,220,.30); display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.brand-word{ font-family:var(--serif); font-weight:600; font-size:20px; letter-spacing:-0.01em; color:var(--tint); }
+.slogan{ font-family:var(--serif); font-style:italic; font-weight:500; font-size:28px; line-height:1.3; color:var(--tint); margin-bottom:28px; }
+.auth-rule{ width:44px; height:1px; background:rgba(245,228,220,.35); margin-bottom:24px; }
+.support-line{ font-size:14.5px; line-height:1.65; color:rgba(245,228,220,.82); max-width:320px; }
+
+.form-panel{ display:flex; align-items:center; justify-content:center; padding:40px 24px; }
+.form-wrap{ width:100%; max-width:380px; opacity:0; transform:translateY(10px); animation:authFadeIn .5s ease forwards; }
+@keyframes authFadeIn{ to{ opacity:1; transform:translateY(0); } }
+@media (prefers-reduced-motion: reduce){ .form-wrap{ opacity:1; transform:none; animation:none; } }
+
+.mobile-brand{ display:none; align-items:center; gap:10px; margin-bottom:40px; }
+@media (max-width:560px){ .mobile-brand{ display:flex; } }
+.mobile-brand .auth-logo-mark{ background:var(--coral); border:none; }
+.mobile-brand .brand-word{ color:var(--ink); }
+
+.form-heading{ font-family:var(--serif); font-weight:600; font-size:20px; margin-bottom:8px; }
+.form-subtext{ font-size:14px; color:var(--muted); margin-bottom:32px; }
+
+.auth-field{ margin-bottom:20px; }
+.auth-field label{ display:block; font-size:13px; font-weight:600; color:var(--ink); margin-bottom:7px; }
+.input-wrap{ position:relative; }
+.auth-field input{
+  width:100%; font-family:var(--sans); font-size:14.5px; color:var(--ink);
+  background:#fff; border:1px solid var(--border); border-radius:9px;
+  padding:12px 14px; outline:none; transition:border-color .15s ease,box-shadow .15s ease;
+}
+.auth-field input.pw-input{ padding-right:44px; }
+.auth-field input::placeholder{ color:#A99C8D; }
+.auth-field input:focus{ border-color:var(--coral); box-shadow:0 0 0 3px rgba(153,60,29,.14); }
+.auth-field input.invalid{ border-color:var(--danger); }
+.field-error{ font-size:12px; color:var(--danger); margin-top:6px; }
+
+.eye-toggle{
+  position:absolute; right:6px; top:50%; transform:translateY(-50%);
+  width:32px; height:32px; border:none; background:transparent; border-radius:6px;
+  display:flex; align-items:center; justify-content:center; color:#A99C8D;
+  transition:color .15s ease,background .15s ease;
+}
+.eye-toggle:hover,.eye-toggle:focus-visible{ color:var(--coral); background:rgba(153,60,29,.08); }
+
+.forgot-row{ display:flex; justify-content:flex-end; margin:-8px 0 24px; }
+.forgot-link{ font-size:13px; font-weight:600; color:var(--coral); }
+.forgot-link:hover{ color:var(--coral-mid); }
+
+.btn-signin{
+  width:100%; background:var(--coral); color:var(--paper); font-family:var(--sans);
+  font-weight:600; font-size:15px; border:none; border-radius:9px; padding:13px 18px;
+  transition:background .15s ease,transform .1s ease;
+}
+.btn-signin:hover:not(:disabled){ background:var(--coral-mid); }
+.btn-signin:active:not(:disabled){ transform:translateY(1px); }
+.btn-signin:disabled{ opacity:.65; cursor:not-allowed; }
+
+.auth-divider{ border:none; border-top:1px dashed var(--border); margin:28px 0 20px; }
+.invite-note{ text-align:center; font-size:12.5px; line-height:1.6; color:var(--muted); }
+
+.auth-error{
+  margin:0 0 14px; padding:10px 12px; border-radius:8px;
+  background:rgba(200,64,48,.08); border:1px solid rgba(200,64,48,.28);
+  color:#A63A2A; font-size:12.5px;
+}

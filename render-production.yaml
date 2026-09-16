@@ -1,0 +1,314 @@
+# ==============================================================================
+# QuestiFy Production Render Blueprint (Private Services + Persistent Disks)
+# Use this when deploying on Render Paid Plans (Starter / Standard)
+# ONLY questify-frontend is a Web Service (ONE single public URL).
+# All microservices and databases are Private Services (pserv) with zero public access.
+# ==============================================================================
+
+envVarGroups:
+  - name: questify-fleet-config
+    envVars:
+      - key: QUESTIFY_JWT_SECRET
+        generateValue: true
+      - key: DB_USERNAME
+        value: root
+      - key: DB_PASSWORD
+        generateValue: true
+      - key: DB_HOST
+        value: questify-mysql
+      - key: DB_PORT
+        value: "3306"
+      - key: EUREKA_SERVER_URL
+        value: http://questify-eureka-server:8761/eureka/
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-1.5-flash
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. ONLY Public Service: React Frontend + Nginx Reverse Proxy
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: questify-frontend
+    env: docker
+    dockerContext: questify-frontend-fixed/questify-frontend
+    dockerfilePath: questify-frontend-fixed/questify-frontend/Dockerfile
+    plan: starter
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: GATEWAY_URL
+        value: http://questify-api-gateway:8000
+
+  # ----------------------------------------------------------------------------
+  # 2. API Gateway (Private Service)
+  # ----------------------------------------------------------------------------
+  - type: pserv
+    name: questify-api-gateway
+    env: docker
+    dockerContext: questify-backend/questify-backend
+    dockerfilePath: questify-backend/questify-backend/api-gateway/Dockerfile
+    plan: starter
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: SERVER_PORT
+        value: 8000
+      - key: AUTH_SERVICE_URL
+        value: http://questify-auth-service:8081
+      - key: INSTITUTION_SERVICE_URL
+        value: http://questify-institution-service:8082
+      - key: QUESTION_BANK_SERVICE_URL
+        value: http://questify-question-bank-service:8083
+      - key: AI_SERVICE_URL
+        value: http://questify-ai-service:8084
+      - key: PAPER_GENERATION_SERVICE_URL
+        value: http://questify-paper-generation-service:8085
+      - key: PAPERS_SERVICE_URL
+        value: http://questify-papers-service:8086
+      - key: APPROVAL_SERVICE_URL
+        value: http://questify-approval-service:8087
+      - key: ANALYTICS_SERVICE_URL
+        value: http://questify-analytics-service:8088
+      - key: BACKUP_SERVICE_URL
+        value: http://questify-backup-service:8089
+      - key: AUDIT_LOG_SERVICE_URL
+        value: http://questify-audit-log-service:8090
+      - key: ML_HEALTH_SERVICE_URL
+        value: http://questify-ml-health-service:8091
+    envVarGroups:
+      - questify-fleet-config
+
+  # ----------------------------------------------------------------------------
+  # 3. Eureka Discovery Server (Private Service)
+  # ----------------------------------------------------------------------------
+  - type: pserv
+    name: questify-eureka-server
+    env: docker
+    dockerContext: questify-backend/questify-backend
+    dockerfilePath: questify-backend/questify-backend/eureka-server/Dockerfile
+    plan: starter
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8761
+      - key: SERVER_PORT
+        value: 8761
+      - key: EUREKA_INSTANCE_HOSTNAME
+        value: questify-eureka-server
+
+  # ----------------------------------------------------------------------------
+  # 4-14. Microservices (Private Services)
+  # ----------------------------------------------------------------------------
+  - type: pserv
+    name: questify-auth-service
+    env: docker
+    dockerContext: questify-backend/questify-backend
+    dockerfilePath: questify-backend/questify-backend/auth-service/Dockerfile
+    plan: starter
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8081
+      - key: SERVER_PORT
+        value: 8081
+    envVarGroups:
+      - questify-fleet-config
+
+  - type: pserv
+    name: questify-institution-service
+    env: docker
+    dockerContext: institution-service/institution-service
+    dockerfilePath: institution-service/institution-service/Dockerfile
+    plan: starter
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8082
+      - key: SERVER_PORT
+        value: 8082
+      - key: DB_NAME
+        value: institution_service
+    envVarGroups:
+      - questify-fleet-config
+
+  - type: pserv
+    name: questify-question-bank-service
+    env: docker
+    dockerContext: question-bank-service/question-bank-service
+    dockerfilePath: question-bank-service/question-bank-service/Dockerfile
+    plan: starter
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8083
+      - key: SERVER_PORT
+        value: 8083
+    envVarGroups:
+      - questify-fleet-config
+
+  - type: pserv
+    name: questify-ai-service
+    env: docker
+    dockerContext: ai-service/ai-service
+    dockerfilePath: ai-service/ai-service/Dockerfile
+    plan: starter
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8084
+      - key: SERVER_PORT
+        value: 8084
+    envVarGroups:
+      - questify-fleet-config
+
+  - type: pserv
+    name: questify-paper-generation-service
+    env: docker
+    dockerContext: paper-generation-service/paper-generation-service
+    dockerfilePath: paper-generation-service/paper-generation-service/Dockerfile
+    plan: starter
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8085
+      - key: SERVER_PORT
+        value: 8085
+      - key: MONGODB_URI
+        value: mongodb://questify-mongodb:27017/paper_generation_service
+    envVarGroups:
+      - questify-fleet-config
+
+  - type: pserv
+    name: questify-papers-service
+    env: docker
+    dockerContext: papers-service/papers-service
+    dockerfilePath: papers-service/papers-service/Dockerfile
+    plan: starter
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8086
+      - key: SERVER_PORT
+        value: 8086
+    envVarGroups:
+      - questify-fleet-config
+
+  - type: pserv
+    name: questify-approval-service
+    env: docker
+    dockerContext: approval-service/approval-service
+    dockerfilePath: approval-service/approval-service/Dockerfile
+    plan: starter
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8087
+      - key: SERVER_PORT
+        value: 8087
+    envVarGroups:
+      - questify-fleet-config
+
+  - type: pserv
+    name: questify-analytics-service
+    env: docker
+    dockerContext: analytics-service/analytics-service
+    dockerfilePath: analytics-service/analytics-service/Dockerfile
+    plan: starter
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8088
+      - key: SERVER_PORT
+        value: 8088
+    envVarGroups:
+      - questify-fleet-config
+
+  - type: pserv
+    name: questify-backup-service
+    env: docker
+    dockerContext: backup-service/backup-service
+    dockerfilePath: backup-service/backup-service/Dockerfile
+    plan: starter
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8089
+      - key: SERVER_PORT
+        value: 8089
+    envVarGroups:
+      - questify-fleet-config
+
+  - type: pserv
+    name: questify-audit-log-service
+    env: docker
+    dockerContext: audit-log-service/audit-log-service
+    dockerfilePath: audit-log-service/audit-log-service/Dockerfile
+    plan: starter
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8090
+      - key: SERVER_PORT
+        value: 8090
+      - key: MONGODB_URI
+        value: mongodb://questify-mongodb:27017/audit_log_service
+    envVarGroups:
+      - questify-fleet-config
+
+  - type: pserv
+    name: questify-ml-health-service
+    env: docker
+    dockerContext: ml-health-service/ml-health-service
+    dockerfilePath: ml-health-service/ml-health-service/Dockerfile
+    plan: starter
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8091
+      - key: SERVER_PORT
+        value: 8091
+    envVarGroups:
+      - questify-fleet-config
+
+  # ----------------------------------------------------------------------------
+  # 15. MySQL (Private Service with Persistent Disk)
+  # ----------------------------------------------------------------------------
+  - type: pserv
+    name: questify-mysql
+    env: docker
+    dockerContext: docker/mysql
+    dockerfilePath: docker/mysql/Dockerfile
+    plan: starter
+    region: oregon
+    disk:
+      name: mysql-data
+      mountPath: /var/lib/mysql
+      sizeGB: 10
+    envVars:
+      - key: PORT
+        value: 3306
+      - key: MYSQL_ROOT_PASSWORD
+        fromGroup: questify-fleet-config
+        name: DB_PASSWORD
+
+  # ----------------------------------------------------------------------------
+  # 16. MongoDB (Private Service with Persistent Disk)
+  # ----------------------------------------------------------------------------
+  - type: pserv
+    name: questify-mongodb
+    env: docker
+    dockerContext: docker/mongodb
+    dockerfilePath: docker/mongodb/Dockerfile
+    plan: starter
+    region: oregon
+    disk:
+      name: mongo-data
+      mountPath: /data/db
+      sizeGB: 10
+    envVars:
+      - key: PORT
+        value: 27017
