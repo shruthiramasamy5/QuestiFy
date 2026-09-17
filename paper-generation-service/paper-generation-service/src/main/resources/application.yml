@@ -6,7 +6,7 @@ spring:
     name: paper-generation-service
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb://localhost:27017/paper_generation_service}
+      uri: ${SPRING_DATA_MONGODB_URI:${MONGODB_URI:mongodb+srv://shruthiramasamy5_db_user:ZKxaL4MlT420PlOF@cluster0.cwqbldx.mongodb.net/paper_generation_service?retryWrites=true&w=majority}}
       auto-index-creation: true
 
 eureka:
