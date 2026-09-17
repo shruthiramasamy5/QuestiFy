@@ -189,7 +189,7 @@ services:
       - key: SERVER_PORT
         value: 8085
       - key: MONGODB_URI
-        value: mongodb://questify-mongodb:27017/paper_generation_service
+        value: mongodb+srv://shruthiramasamy5_db_user:ZKxaL4MlT420PlOF@cluster0.cwqbldx.mongodb.net/paper_generation_service?retryWrites=true&w=majority
 
   # ----------------------------------------------------------------------------
   # 9. Papers Service (Private Service)
@@ -276,7 +276,7 @@ services:
       - key: SERVER_PORT
         value: 8090
       - key: MONGODB_URI
-        value: mongodb://questify-mongodb:27017/audit_log_service
+        value: mongodb+srv://shruthiramasamy5_db_user:ZKxaL4MlT420PlOF@cluster0.cwqbldx.mongodb.net/audit_log_service?retryWrites=true&w=majority
 
   # ----------------------------------------------------------------------------
   # 14. ML Health Service (Private Service)
