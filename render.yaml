@@ -21,8 +21,8 @@ envVarGroups:
         value: qOn7ZSVI8VxygMUb
       - key: DB_USE_SSL
         value: "true"
-      - key: EUREKA_SERVER_URL
-        value: http://questify-eureka-server:8761/eureka/
+      - key: EUREKA_CLIENT_ENABLED
+        value: "false"
       - key: GEMINI_MODEL
         value: gemini-1.5-flash
 
@@ -42,10 +42,10 @@ services:
       - key: PORT
         value: 10000
       - key: GATEWAY_URL
-        value: http://questify-api-gateway:8000
+        value: https://questify-api-gateway.onrender.com
 
   # ============================================================================
-  # 2. API Gateway (Spring Cloud Gateway) - Internal Edge Router
+  # 2. API Gateway (Spring Cloud Gateway) - Edge Router
   # ============================================================================
   - type: web
     name: questify-api-gateway
@@ -61,48 +61,30 @@ services:
       - key: SERVER_PORT
         value: 8000
       - key: AUTH_SERVICE_URL
-        value: http://questify-auth-service:8081
+        value: https://questify-auth-service.onrender.com
       - key: INSTITUTION_SERVICE_URL
-        value: http://questify-institution-service:8082
+        value: https://questify-institution-service.onrender.com
       - key: QUESTION_BANK_SERVICE_URL
-        value: http://questify-question-bank-service:8083
+        value: https://questify-question-bank-service.onrender.com
       - key: AI_SERVICE_URL
-        value: http://questify-ai-service:8084
+        value: https://questify-ai-service.onrender.com
       - key: PAPER_GENERATION_SERVICE_URL
-        value: http://questify-paper-generation-service:8085
+        value: https://questify-paper-generation-service.onrender.com
       - key: PAPERS_SERVICE_URL
-        value: http://questify-papers-service:8086
+        value: https://questify-papers-service.onrender.com
       - key: APPROVAL_SERVICE_URL
-        value: http://questify-approval-service:8087
+        value: https://questify-approval-service.onrender.com
       - key: ANALYTICS_SERVICE_URL
-        value: http://questify-analytics-service:8088
+        value: https://questify-analytics-service.onrender.com
       - key: BACKUP_SERVICE_URL
-        value: http://questify-backup-service:8089
+        value: https://questify-backup-service.onrender.com
       - key: AUDIT_LOG_SERVICE_URL
-        value: http://questify-audit-log-service:8090
+        value: https://questify-audit-log-service.onrender.com
       - key: ML_HEALTH_SERVICE_URL
-        value: http://questify-ml-health-service:8091
+        value: https://questify-ml-health-service.onrender.com
 
   # ============================================================================
-  # 3. Eureka Service Registry
-  # ============================================================================
-  - type: web
-    name: questify-eureka-server
-    runtime: docker
-    dockerContext: questify-backend/questify-backend
-    dockerfilePath: questify-backend/questify-backend/eureka-server/Dockerfile
-    plan: free
-    region: oregon
-    envVars:
-      - key: PORT
-        value: 8761
-      - key: SERVER_PORT
-        value: 8761
-      - key: EUREKA_INSTANCE_HOSTNAME
-        value: questify-eureka-server
-
-  # ============================================================================
-  # 4. Auth Service (:8081)
+  # 3. Auth Service (:8081)
   # ============================================================================
   - type: web
     name: questify-auth-service
@@ -119,7 +101,7 @@ services:
         value: 8081
 
   # ============================================================================
-  # 5. Institution Service (:8082)
+  # 4. Institution Service (:8082)
   # ============================================================================
   - type: web
     name: questify-institution-service
@@ -138,7 +120,7 @@ services:
         value: institution_service
 
   # ============================================================================
-  # 6. Question Bank Service (:8083)
+  # 5. Question Bank Service (:8083)
   # ============================================================================
   - type: web
     name: questify-question-bank-service
@@ -155,7 +137,7 @@ services:
         value: 8083
 
   # ============================================================================
-  # 7. AI Service (:8084)
+  # 6. AI Service (:8084)
   # ============================================================================
   - type: web
     name: questify-ai-service
@@ -174,7 +156,7 @@ services:
         sync: false
 
   # ============================================================================
-  # 8. Paper Generation Service (:8085)
+  # 7. Paper Generation Service (:8085)
   # ============================================================================
   - type: web
     name: questify-paper-generation-service
@@ -189,11 +171,9 @@ services:
         value: 8085
       - key: SERVER_PORT
         value: 8085
-      - key: MONGODB_URI
-        value: mongodb://questify-mongodb:27017/paper_generation_service
 
   # ============================================================================
-  # 9. Papers Service (:8086)
+  # 8. Papers Service (:8086)
   # ============================================================================
   - type: web
     name: questify-papers-service
@@ -210,7 +190,7 @@ services:
         value: 8086
 
   # ============================================================================
-  # 10. Approval Service (:8087)
+  # 9. Approval Service (:8087)
   # ============================================================================
   - type: web
     name: questify-approval-service
@@ -227,7 +207,7 @@ services:
         value: 8087
 
   # ============================================================================
-  # 11. Analytics Service (:8088)
+  # 10. Analytics Service (:8088)
   # ============================================================================
   - type: web
     name: questify-analytics-service
@@ -244,7 +224,7 @@ services:
         value: 8088
 
   # ============================================================================
-  # 12. Backup Service (:8089)
+  # 11. Backup Service (:8089)
   # ============================================================================
   - type: web
     name: questify-backup-service
@@ -261,7 +241,7 @@ services:
         value: 8089
 
   # ============================================================================
-  # 13. Audit Log Service (:8090)
+  # 12. Audit Log Service (:8090)
   # ============================================================================
   - type: web
     name: questify-audit-log-service
@@ -276,11 +256,9 @@ services:
         value: 8090
       - key: SERVER_PORT
         value: 8090
-      - key: MONGODB_URI
-        value: mongodb://questify-mongodb:27017/audit_log_service
 
   # ============================================================================
-  # 14. ML Health Service (:8091)
+  # 13. ML Health Service (:8091)
   # ============================================================================
   - type: web
     name: questify-ml-health-service
