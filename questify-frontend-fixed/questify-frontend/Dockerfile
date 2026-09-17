@@ -30,7 +30,8 @@ COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Default environment variables (overridden by Render or Docker Compose)
+# Only substitute PORT and GATEWAY_URL so internal Nginx variables remain intact
+ENV NGINX_ENVSUBST_FILTER="PORT|GATEWAY_URL"
 ENV PORT=80
 ENV GATEWAY_URL=http://questify-api-gateway:8000
 
