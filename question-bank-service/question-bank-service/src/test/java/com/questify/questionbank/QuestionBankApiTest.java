@@ -68,7 +68,7 @@ class QuestionBankApiTest {
                 .andReturn().getResponse().getContentAsString();
         Long coId = objectMapper.readTree(createdCo).get("id").asLong();
 
-        QuestionRequest question = new QuestionRequest("Explain AVL rotations.", "Data Structures", "Unit 2",
+        QuestionRequest question = new QuestionRequest(1L, 1L, "Explain AVL rotations.", "Data Structures", "Unit 2",
                 Difficulty.MEDIUM, QuestionType.LONG_ANSWER, 10, BloomLevel.K3, Set.of(coId));
 
         mockMvc.perform(post("/api/questions").contentType(MediaType.APPLICATION_JSON)
@@ -96,7 +96,7 @@ class QuestionBankApiTest {
     @Test
     @WithMockUser(username = "faculty@questify.edu", roles = {"FACULTY"})
     void rejectsInvalidQuestion() throws Exception {
-        QuestionRequest invalid = new QuestionRequest(" ", "", "", null, null, 0, null, null);
+        QuestionRequest invalid = new QuestionRequest(null, null, " ", "", "", null, null, 0, null, null);
         mockMvc.perform(post("/api/questions").contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalid)))
                 .andExpect(status().isBadRequest())

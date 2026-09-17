@@ -95,7 +95,7 @@ class QuestionDraftServiceTest {
                 "faculty1", null, null));
 
         DraftApprovalRequest approval = new DraftApprovalRequest(null, null, null, null,
-                QuestionType.SHORT_ANSWER, null);
+                QuestionType.SHORT_ANSWER, null, null, null);
 
         QuestionResponse response = service.approve(5L, approval);
 
@@ -113,7 +113,7 @@ class QuestionDraftServiceTest {
         when(draftRepository.findById(6L)).thenReturn(Optional.of(draft));
 
         DraftApprovalRequest approval = new DraftApprovalRequest(null, null, null, null,
-                QuestionType.SHORT_ANSWER, null);
+                QuestionType.SHORT_ANSWER, null, null, null);
 
         assertThatThrownBy(() -> service.approve(6L, approval)).isInstanceOf(IllegalStateException.class);
     }
@@ -136,7 +136,7 @@ class QuestionDraftServiceTest {
         when(draftRepository.findById(99L)).thenReturn(Optional.empty());
 
         DraftApprovalRequest approval = new DraftApprovalRequest(null, null, null, null,
-                QuestionType.SHORT_ANSWER, null);
+                QuestionType.SHORT_ANSWER, null, null, null);
 
         assertThatThrownBy(() -> service.approve(99L, approval)).isInstanceOf(ResourceNotFoundException.class);
     }
