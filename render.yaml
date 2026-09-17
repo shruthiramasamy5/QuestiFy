@@ -43,6 +43,8 @@ services:
         value: 10000
       - key: GATEWAY_URL
         value: https://questify-api-gateway.onrender.com
+      - key: GATEWAY_HOST
+        value: questify-api-gateway.onrender.com
 
   # ============================================================================
   # 2. API Gateway (Spring Cloud Gateway) - Edge Router

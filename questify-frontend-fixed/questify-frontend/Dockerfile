@@ -30,10 +30,11 @@ COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Only substitute PORT and GATEWAY_URL so internal Nginx variables remain intact
-ENV NGINX_ENVSUBST_FILTER="PORT|GATEWAY_URL"
+# Only substitute PORT, GATEWAY_URL, and GATEWAY_HOST so internal Nginx variables remain intact
+ENV NGINX_ENVSUBST_FILTER="PORT|GATEWAY_URL|GATEWAY_HOST"
 ENV PORT=80
 ENV GATEWAY_URL=http://questify-api-gateway:8000
+ENV GATEWAY_HOST=questify-api-gateway:8000
 
 EXPOSE 80 10000
 
