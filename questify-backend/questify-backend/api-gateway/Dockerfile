@@ -9,7 +9,7 @@ COPY pom.xml .
 COPY api-gateway/pom.xml api-gateway/
 COPY api-gateway/src api-gateway/src
 
-RUN mvn -B -f api-gateway/pom.xml clean package -DskipTests
+RUN mvn -B -f api-gateway/pom.xml clean package -Dmaven.test.skip=true
 
 # ==============================================================================
 # Stage 2: Production Runtime with JVM Memory Optimization

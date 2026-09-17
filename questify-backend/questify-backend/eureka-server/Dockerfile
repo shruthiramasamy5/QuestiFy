@@ -11,7 +11,7 @@ COPY eureka-server/pom.xml eureka-server/
 COPY eureka-server/src eureka-server/src
 
 # Compile and package module
-RUN mvn -B -f eureka-server/pom.xml clean package -DskipTests
+RUN mvn -B -f eureka-server/pom.xml clean package -Dmaven.test.skip=true
 
 # ==============================================================================
 # Stage 2: Production Runtime with JVM Memory Optimization

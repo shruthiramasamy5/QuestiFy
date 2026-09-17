@@ -9,7 +9,7 @@ COPY pom.xml .
 COPY auth-service/pom.xml auth-service/
 COPY auth-service/src auth-service/src
 
-RUN mvn -B -f auth-service/pom.xml clean package -DskipTests
+RUN mvn -B -f auth-service/pom.xml clean package -Dmaven.test.skip=true
 
 # ==============================================================================
 # Stage 2: Production Runtime with JVM Memory Optimization
