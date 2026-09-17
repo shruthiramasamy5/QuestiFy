@@ -3,6 +3,7 @@
 # Unified deployment for the entire QuestiFy microservice platform
 # Accessible through ONE single public URL (questify-frontend)
 # ==============================================================================
+version: "1"
 
 # Shared Environment Variables & Secrets across the Fleet
 envVarGroups:
@@ -13,15 +14,15 @@ envVarGroups:
       - key: DB_USERNAME
         value: root
       - key: DB_PASSWORD
-        generateValue: true
+        value: QuestifyRoot@2026
+      - key: MYSQL_ROOT_PASSWORD
+        value: QuestifyRoot@2026
       - key: DB_HOST
         value: questify-mysql
       - key: DB_PORT
         value: "3306"
       - key: EUREKA_SERVER_URL
         value: http://questify-eureka-server:8761/eureka/
-      - key: GEMINI_API_KEY
-        sync: false
       - key: GEMINI_MODEL
         value: gemini-1.5-flash
 
@@ -32,7 +33,7 @@ services:
   # ============================================================================
   - type: web
     name: questify-frontend
-    env: docker
+    runtime: docker
     dockerContext: questify-frontend-fixed/questify-frontend
     dockerfilePath: questify-frontend-fixed/questify-frontend/Dockerfile
     plan: free
@@ -48,12 +49,13 @@ services:
   # ============================================================================
   - type: web
     name: questify-api-gateway
-    env: docker
+    runtime: docker
     dockerContext: questify-backend/questify-backend
     dockerfilePath: questify-backend/questify-backend/api-gateway/Dockerfile
     plan: free
     region: oregon
     envVars:
+      - fromGroup: questify-fleet-config
       - key: PORT
         value: 8000
       - key: SERVER_PORT
@@ -80,15 +82,13 @@ services:
         value: http://questify-audit-log-service:8090
       - key: ML_HEALTH_SERVICE_URL
         value: http://questify-ml-health-service:8091
-    envVarGroups:
-      - questify-fleet-config
 
   # ============================================================================
   # 3. Eureka Service Registry
   # ============================================================================
   - type: web
     name: questify-eureka-server
-    env: docker
+    runtime: docker
     dockerContext: questify-backend/questify-backend
     dockerfilePath: questify-backend/questify-backend/eureka-server/Dockerfile
     plan: free
@@ -106,228 +106,217 @@ services:
   # ============================================================================
   - type: web
     name: questify-auth-service
-    env: docker
+    runtime: docker
     dockerContext: questify-backend/questify-backend
     dockerfilePath: questify-backend/questify-backend/auth-service/Dockerfile
     plan: free
     region: oregon
     envVars:
+      - fromGroup: questify-fleet-config
       - key: PORT
         value: 8081
       - key: SERVER_PORT
         value: 8081
-    envVarGroups:
-      - questify-fleet-config
 
   # ============================================================================
   # 5. Institution Service (:8082)
   # ============================================================================
   - type: web
     name: questify-institution-service
-    env: docker
+    runtime: docker
     dockerContext: institution-service/institution-service
     dockerfilePath: institution-service/institution-service/Dockerfile
     plan: free
     region: oregon
     envVars:
+      - fromGroup: questify-fleet-config
       - key: PORT
         value: 8082
       - key: SERVER_PORT
         value: 8082
       - key: DB_NAME
         value: institution_service
-    envVarGroups:
-      - questify-fleet-config
 
   # ============================================================================
   # 6. Question Bank Service (:8083)
   # ============================================================================
   - type: web
     name: questify-question-bank-service
-    env: docker
+    runtime: docker
     dockerContext: question-bank-service/question-bank-service
     dockerfilePath: question-bank-service/question-bank-service/Dockerfile
     plan: free
     region: oregon
     envVars:
+      - fromGroup: questify-fleet-config
       - key: PORT
         value: 8083
       - key: SERVER_PORT
         value: 8083
-    envVarGroups:
-      - questify-fleet-config
 
   # ============================================================================
   # 7. AI Service (:8084)
   # ============================================================================
   - type: web
     name: questify-ai-service
-    env: docker
+    runtime: docker
     dockerContext: ai-service/ai-service
     dockerfilePath: ai-service/ai-service/Dockerfile
     plan: free
     region: oregon
     envVars:
+      - fromGroup: questify-fleet-config
       - key: PORT
         value: 8084
       - key: SERVER_PORT
         value: 8084
-    envVarGroups:
-      - questify-fleet-config
+      - key: GEMINI_API_KEY
+        sync: false
 
   # ============================================================================
   # 8. Paper Generation Service (:8085)
   # ============================================================================
   - type: web
     name: questify-paper-generation-service
-    env: docker
+    runtime: docker
     dockerContext: paper-generation-service/paper-generation-service
     dockerfilePath: paper-generation-service/paper-generation-service/Dockerfile
     plan: free
     region: oregon
     envVars:
+      - fromGroup: questify-fleet-config
       - key: PORT
         value: 8085
       - key: SERVER_PORT
         value: 8085
       - key: MONGODB_URI
         value: mongodb://questify-mongodb:27017/paper_generation_service
-    envVarGroups:
-      - questify-fleet-config
 
   # ============================================================================
   # 9. Papers Service (:8086)
   # ============================================================================
   - type: web
     name: questify-papers-service
-    env: docker
+    runtime: docker
     dockerContext: papers-service/papers-service
     dockerfilePath: papers-service/papers-service/Dockerfile
     plan: free
     region: oregon
     envVars:
+      - fromGroup: questify-fleet-config
       - key: PORT
         value: 8086
       - key: SERVER_PORT
         value: 8086
-    envVarGroups:
-      - questify-fleet-config
 
   # ============================================================================
   # 10. Approval Service (:8087)
   # ============================================================================
   - type: web
     name: questify-approval-service
-    env: docker
+    runtime: docker
     dockerContext: approval-service/approval-service
     dockerfilePath: approval-service/approval-service/Dockerfile
     plan: free
     region: oregon
     envVars:
+      - fromGroup: questify-fleet-config
       - key: PORT
         value: 8087
       - key: SERVER_PORT
         value: 8087
-    envVarGroups:
-      - questify-fleet-config
 
   # ============================================================================
   # 11. Analytics Service (:8088)
   # ============================================================================
   - type: web
     name: questify-analytics-service
-    env: docker
+    runtime: docker
     dockerContext: analytics-service/analytics-service
     dockerfilePath: analytics-service/analytics-service/Dockerfile
     plan: free
     region: oregon
     envVars:
+      - fromGroup: questify-fleet-config
       - key: PORT
         value: 8088
       - key: SERVER_PORT
         value: 8088
-    envVarGroups:
-      - questify-fleet-config
 
   # ============================================================================
   # 12. Backup Service (:8089)
   # ============================================================================
   - type: web
     name: questify-backup-service
-    env: docker
+    runtime: docker
     dockerContext: backup-service/backup-service
     dockerfilePath: backup-service/backup-service/Dockerfile
     plan: free
     region: oregon
     envVars:
+      - fromGroup: questify-fleet-config
       - key: PORT
         value: 8089
       - key: SERVER_PORT
         value: 8089
-    envVarGroups:
-      - questify-fleet-config
 
   # ============================================================================
   # 13. Audit Log Service (:8090)
   # ============================================================================
   - type: web
     name: questify-audit-log-service
-    env: docker
+    runtime: docker
     dockerContext: audit-log-service/audit-log-service
     dockerfilePath: audit-log-service/audit-log-service/Dockerfile
     plan: free
     region: oregon
     envVars:
+      - fromGroup: questify-fleet-config
       - key: PORT
         value: 8090
       - key: SERVER_PORT
         value: 8090
       - key: MONGODB_URI
         value: mongodb://questify-mongodb:27017/audit_log_service
-    envVarGroups:
-      - questify-fleet-config
 
   # ============================================================================
   # 14. ML Health Service (:8091)
   # ============================================================================
   - type: web
     name: questify-ml-health-service
-    env: docker
+    runtime: docker
     dockerContext: ml-health-service/ml-health-service
     dockerfilePath: ml-health-service/ml-health-service/Dockerfile
     plan: free
     region: oregon
     envVars:
+      - fromGroup: questify-fleet-config
       - key: PORT
         value: 8091
       - key: SERVER_PORT
         value: 8091
-    envVarGroups:
-      - questify-fleet-config
 
   # ============================================================================
   # 15. MySQL Database (Self-hosted on Render with pre-baked schemas)
   # ============================================================================
   - type: web
     name: questify-mysql
-    env: docker
+    runtime: docker
     dockerContext: docker/mysql
     dockerfilePath: docker/mysql/Dockerfile
     plan: free
     region: oregon
     envVars:
+      - fromGroup: questify-fleet-config
       - key: PORT
         value: 3306
-      - key: MYSQL_ROOT_PASSWORD
-        fromGroup: questify-fleet-config
-        name: DB_PASSWORD
 
   # ============================================================================
   # 16. MongoDB Database (Self-hosted on Render)
   # ============================================================================
   - type: web
     name: questify-mongodb
-    env: docker
+    runtime: docker
     dockerContext: docker/mongodb
     dockerfilePath: docker/mongodb/Dockerfile
     plan: free
