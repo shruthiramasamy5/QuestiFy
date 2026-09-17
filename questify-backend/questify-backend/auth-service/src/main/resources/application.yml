@@ -35,6 +35,12 @@ questify:
     secret: ${QUESTIFY_JWT_SECRET:${JWT_SECRET:questify-dev-secret-key-change-me-before-deploying-anywhere-real}}
     expiration-minutes: ${JWT_EXPIRATION_MINUTES:480}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
 logging:
   level:
     com.questify: DEBUG
