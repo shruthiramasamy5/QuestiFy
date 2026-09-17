@@ -11,16 +11,16 @@ envVarGroups:
     envVars:
       - key: QUESTIFY_JWT_SECRET
         generateValue: true
-      - key: DB_USERNAME
-        value: root
-      - key: DB_PASSWORD
-        value: QuestifyRoot@2026
-      - key: MYSQL_ROOT_PASSWORD
-        value: QuestifyRoot@2026
       - key: DB_HOST
-        value: questify-mysql
+        value: gateway01.ap-southeast-1.prod.aws.tidbcloud.com
       - key: DB_PORT
-        value: "3306"
+        value: "4000"
+      - key: DB_USERNAME
+        value: 46r3xHThXTDDdCZ.root
+      - key: DB_PASSWORD
+        value: qOn7ZSVI8VxygMUb
+      - key: DB_USE_SSL
+        value: "true"
       - key: EUREKA_SERVER_URL
         value: http://questify-eureka-server:8761/eureka/
       - key: GEMINI_MODEL
@@ -295,32 +295,3 @@ services:
         value: 8091
       - key: SERVER_PORT
         value: 8091
-
-  # ============================================================================
-  # 15. MySQL Database (Self-hosted on Render with pre-baked schemas)
-  # ============================================================================
-  - type: web
-    name: questify-mysql
-    runtime: docker
-    dockerContext: docker/mysql
-    dockerfilePath: docker/mysql/Dockerfile
-    plan: free
-    region: oregon
-    envVars:
-      - fromGroup: questify-fleet-config
-      - key: PORT
-        value: 3306
-
-  # ============================================================================
-  # 16. MongoDB Database (Self-hosted on Render)
-  # ============================================================================
-  - type: web
-    name: questify-mongodb
-    runtime: docker
-    dockerContext: docker/mongodb
-    dockerfilePath: docker/mongodb/Dockerfile
-    plan: free
-    region: oregon
-    envVars:
-      - key: PORT
-        value: 27017

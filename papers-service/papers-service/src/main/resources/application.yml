@@ -5,7 +5,7 @@ spring:
   application:
     name: papers-service
   datasource:
-    url: ${MYSQL_URL:jdbc:mysql://${DB_HOST:${MYSQL_HOST:localhost}}:${DB_PORT:${MYSQL_PORT:3306}}/papers_service?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    url: ${SPRING_DATASOURCE_URL:${MYSQL_URL:jdbc:mysql://${DB_HOST:${MYSQL_HOST:localhost}}:${DB_PORT:${MYSQL_PORT:3306}}/papers_service?createDatabaseIfNotExist=true&useSSL=${DB_USE_SSL:true}&allowPublicKeyRetrieval=true&serverTimezone=UTC}}
     username: ${MYSQL_USER:${DB_USERNAME:root}}
     password: ${MYSQL_PASSWORD:${DB_PASSWORD:Shruthika@Y150}}
     driver-class-name: com.mysql.cj.jdbc.Driver

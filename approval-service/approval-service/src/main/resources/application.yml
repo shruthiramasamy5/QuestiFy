@@ -5,7 +5,7 @@ spring:
   application:
     name: approval-service
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://${DB_HOST:${MYSQL_HOST:localhost}}:${DB_PORT:${MYSQL_PORT:3306}}/approval_service?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://${DB_HOST:${MYSQL_HOST:localhost}}:${DB_PORT:${MYSQL_PORT:3306}}/approval_service?createDatabaseIfNotExist=true&useSSL=${DB_USE_SSL:true}&allowPublicKeyRetrieval=true&serverTimezone=UTC}
     username: ${DB_USERNAME:${MYSQL_USER:root}}
     password: ${DB_PASSWORD:${MYSQL_PASSWORD:Shruthika@Y150}}
     driver-class-name: com.mysql.cj.jdbc.Driver
